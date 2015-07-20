@@ -47,6 +47,22 @@ describe Toshi::Web::Api, :type => :request do
       expect(json[1]['version']).to eq(2)
       expect(json[1]['transaction_hashes'].count).to eq(1)
     end
+
+    it 'loads blocks with limit param' do
+      get '/blocks', {limit: 1}
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(1)
+    end
+
+    it 'loads blocks with offset param' do
+      get '/blocks', {limit: 1, offset: 1}
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(1)
+
+      expect(json[0]['hash']).to eq('000ff5c07c4fecfed17ce7af54e968656d2f568e68753100748a00ae1ed79ee9')
+    end
   end
 
   describe "GET /blocks/<hash>" do
@@ -180,6 +196,8 @@ describe Toshi::Web::Api, :type => :request do
       expect(json['transactions'][0]['block_hash']).to eq('000ff5c07c4fecfed17ce7af54e968656d2f568e68753100748a00ae1ed79ee9')
       expect(json['transactions'][0]['block_time']).to eq('2014-06-07T23:39:45Z')
       expect(json['transactions'][0]['block_branch']).to eq('main')
+
+      expect(json['no_transactions']).to be 1
     end
   end
 
