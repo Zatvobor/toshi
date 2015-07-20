@@ -12,7 +12,7 @@ test:
   max_peers: 1
 
 staging:
-  database_url: postgres://postgres@127.0.0.1:5432/toshi_staging
+  database_url: postgres://toshi@127.0.0.1:5432/toshi_staging
   log_level: 'info'
   max_peers: 8
   network: <%= ENV['TOSHI_NETWORK'] || 'bitcoin' %>
