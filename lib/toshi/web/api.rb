@@ -40,7 +40,8 @@ module Toshi
 
       # get collection of blocks
       get '/blocks.?:format?' do
-        options = {offset: (params[:offset] || 0), limit: (params[:limit] || 50 )}
+        options = {offset: params[:offset], limit: params[:limit]}
+        Toshi::Utils.sanitize_options(options)
         @blocks = Toshi::Models::Block.limit(options[:limit]).offset(options[:offset]).order(Sequel.desc(:id))
 
         case format
