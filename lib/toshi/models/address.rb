@@ -61,6 +61,7 @@ module Toshi
         addresses.each{|address|
           hash = {}
           hash[:hash] = address.address
+          hash[:hash160] = address.hash160
           hash[:balance] = address.balance
           hash[:received] = address.total_received
           hash[:sent] = address.total_sent
