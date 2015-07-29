@@ -40,9 +40,11 @@ module Toshi
 
       # get collection of blocks
       get '/blocks.?:format?' do
-        options = {offset: params[:offset], limit: params[:limit]}
+        options = {offset: params[:offset], limit: params[:limit], branch: params[:branch]}
         Toshi::Utils.sanitize_options(options)
-        @blocks = Toshi::Models::Block.limit(options[:limit]).offset(options[:offset]).order(Sequel.desc(:id))
+        query = Toshi::Models::Block.order(Sequel.desc(:id))
+        query = query.where(branch: options[:branch]) if options[:branch]
+        @blocks = query.limit(options[:limit]).offset(options[:offset])
 
         case format
         when 'json'

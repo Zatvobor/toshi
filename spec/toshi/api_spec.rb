@@ -63,6 +63,13 @@ describe Toshi::Web::Api, :type => :request do
 
       expect(json[0]['hash']).to eq('000ff5c07c4fecfed17ce7af54e968656d2f568e68753100748a00ae1ed79ee9')
     end
+
+    it 'loads blocks with branch param' do
+      get '/blocks', {limit: 1, branch: 'orphan'}
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(0)
+    end
   end
 
   describe "GET /blocks/<hash>" do
