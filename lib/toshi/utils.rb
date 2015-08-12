@@ -83,6 +83,12 @@ module Toshi
       options[:limit] = [ [ options[:limit].to_i, 0 ].max, 1000 ].min
 
       options[:branch] = Toshi::Models::Block::BRANCH_TABLE.invert[options[:branch]]
+
+      order_by = (options[:order_by] || Sequel.desc(:id))
+      order_by = Sequel.desc(order_by.to_sym) if order_by.is_a?(String)
+      options[:order_by] = order_by
+
+      options
     end
 
     def synchronized(lock_id, &block)

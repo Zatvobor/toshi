@@ -170,9 +170,11 @@ module Toshi
         address = Toshi::Models::UnconfirmedAddress.where(address: params[:address]).first unless address
         raise NotFoundError unless address
 
+        options = {show_txs: true, offset: params[:offset], limit: params[:limit], order_by: params[:order_by]}
+
         case format
         when 'json'
-          json address.to_hash(options={show_txs: true, offset: params[:offset], limit: params[:limit]})
+          json address.to_hash(options)
         else
           raise InvalidFormatError
         end
