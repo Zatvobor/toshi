@@ -72,7 +72,7 @@ describe Toshi::Web::Api, :type => :request do
     end
   end
 
-  describe "GET /blocks/<hash>" do
+  describe "GET /blocks/<block>" do
     it "loads block" do
       get '/blocks/000ff5c07c4fecfed17ce7af54e968656d2f568e68753100748a00ae1ed79ee9'
 
@@ -96,10 +96,26 @@ describe Toshi::Web::Api, :type => :request do
       expect(json['version']).to eq(2)
       expect(json['transaction_hashes'].count).to eq(1)
     end
+
+    it "loads latest block" do
+      get '/blocks/latest'
+
+      expect(last_response).to be_ok
+      expect(json['height']).to eq(7)
+      expect(json['branch']).to eq('main')
+    end
+
+    it "loads latest block by time" do
+      get '/blocks/latest', {time: 2}
+
+      expect(last_response).to be_ok
+      expect(json['height']).to eq(2)
+      expect(json['branch']).to eq('main')
+    end
   end
 
-  describe "GET /blocks/<hash>/transactions" do
-    it "loads block & transactions" do
+  describe "GET /blocks/<block>/transactions" do
+    it "loads transactions" do
       get '/blocks/000ff5c07c4fecfed17ce7af54e968656d2f568e68753100748a00ae1ed79ee9/transactions'
 
       expect(last_response).to be_ok
@@ -123,6 +139,26 @@ describe Toshi::Web::Api, :type => :request do
       expect(json['version']).to eq(2)
       expect(json['transactions'].count).to eq(1)
     end
+
+    it "loads latest transactions" do
+      get '/blocks/latest/transactions'
+
+      expect(last_response).to be_ok
+      expect(json['height']).to eq(7)
+      expect(json['branch']).to eq('main')
+      expect(json['transactions'].count).to eq(2)
+    end
+
+    it "loads latest transactions by time" do
+      get '/blocks/latest/transactions', {time: 3}
+
+      expect(last_response).to be_ok
+      expect(json['height']).to eq(3)
+      expect(json['branch']).to eq('main')
+      expect(json['transactions'].count).to eq(1)
+    end
+
+
   end
 
   describe "GET /transactions/<hash>" do

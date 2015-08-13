@@ -58,7 +58,7 @@ module Toshi
 
       # get latest block or search by hash or height
       get '/blocks/:block.?:format?' do
-        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block])
+        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block], params[:time])
 
         case format
         when 'json'; json(@block.to_hash)
@@ -70,7 +70,7 @@ module Toshi
 
       # get block transactions
       get '/blocks/:block/transactions.?:format?' do
-        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block])
+        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block], params[:time])
 
         case format
         when 'json'
