@@ -40,11 +40,11 @@ module Toshi
 
       # get collection of blocks
       get '/blocks.?:format?' do
-        options = {offset: params[:offset], limit: params[:limit], branch: params[:branch]}
-        Toshi::Utils.sanitize_options(options)
-        query = Toshi::Models::Block.order(Sequel.desc(:id))
-        query = query.where(branch: options[:branch]) if options[:branch]
-        @blocks = query.limit(options[:limit]).offset(options[:offset])
+        opts  = {offset: params[:offset], limit: params[:limit], branch: params[:branch]}
+        opts  = Toshi::Utils.sanitize_options(opts)
+        where = {branch: opts[:branch]} if opts[:branch]
+
+        @blocks = Toshi::BlocksLogic.all(where, opts[:limit], opts[:offset])
 
         case format
         when 'json'
@@ -57,15 +57,8 @@ module Toshi
       end
 
       # get latest block or search by hash or height
-      get '/blocks/:hash.?:format?' do
-        if params[:hash].to_s == 'latest'
-          @block = Toshi::Models::Block.head
-        elsif params[:hash].to_s.size < 64 && (Integer(params[:hash]) rescue false)
-          @block = Toshi::Models::Block.where(height: params[:hash], branch: 0).first
-        else
-          @block = Toshi::Models::Block.where(hsh: params[:hash]).first
-        end
-        raise NotFoundError unless @block
+      get '/blocks/:block.?:format?' do
+        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block])
 
         case format
         when 'json'; json(@block.to_hash)
@@ -76,15 +69,8 @@ module Toshi
       end
 
       # get block transactions
-      get '/blocks/:hash/transactions.?:format?' do
-        if params[:hash].to_s == 'latest'
-          @block = Toshi::Models::Block.head
-        elsif params[:hash].to_s.size < 64 && (Integer(params[:hash]) rescue false)
-          @block = Toshi::Models::Block.where(height: params[:hash], branch: 0).first
-        else
-          @block = Toshi::Models::Block.where(hsh: params[:hash]).first
-        end
-        raise NotFoundError unless @block
+      get '/blocks/:block/transactions.?:format?' do
+        @block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block])
 
         case format
         when 'json'
