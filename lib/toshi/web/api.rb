@@ -186,14 +186,16 @@ module Toshi
         time = Time.now if !time || time.to_i == 0
         block = Toshi::Models::Block.from_time(time.to_i)
 
+        response =  {
+          balance: address.balance_at(block.height),
+          address: address.address,
+          block_height: block.height,
+          block_time: block.time
+        }
+
         case format
         when 'json'
-          {
-            balance: address.balance_at(block.height),
-            address: address.address,
-            block_height: block.height,
-            block_time: block.time
-          }.to_json
+          response.to_json
         else
           raise InvalidFormatError
         end

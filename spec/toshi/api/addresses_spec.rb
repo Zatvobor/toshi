@@ -64,15 +64,9 @@ describe Toshi::Web::Api, :type => :request do
 
   end
 
-  describe "GET /addresses/<hash>/balance.<format>" do
-    it "fails if not requesting json" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at.xml'
-
-      expect(json['error']).to eq("Response format is not supported")
-    end
-
+  describe "GET /addresses/<hash>/balance_at.json" do
     it "returns balance, target address and block info" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at.json'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at'
 
       expect(json['balance']).to eq(5_000_000_000)
       expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
@@ -81,7 +75,7 @@ describe Toshi::Web::Api, :type => :request do
     end
 
     it "will return a balance of 0 if there are no transactions found" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at.json?time=5'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at?time=5'
 
       expect(json['balance']).to eq(0)
       expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
@@ -90,7 +84,7 @@ describe Toshi::Web::Api, :type => :request do
     end
 
     it "uses block height if time is below five hundred thousand" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at.json?time=6'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at?time=6'
 
       expect(json['balance']).to eq(5_000_000_000)
       expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
