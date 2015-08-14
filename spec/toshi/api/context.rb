@@ -31,7 +31,7 @@ RSpec.shared_context 'shared hash assertions' do
     expect(json['unconfirmed_balance']).to eq(0)
   end
 
-  def expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_(json=json)
+  def expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_(json=json())
     expect(json['hash']).to eq('40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768')
     expect(json['version']).to eq(1)
     expect(json['lock_time']).to eq(0)
