@@ -71,7 +71,7 @@ task :console do
 end
 
 task :test do
-  exec 'TOSHI_ENV=test LOG_LEVEL=info bundle exec rspec spec'
+  exec 'TOSHI_ENV=test LOG_LEVEL=info bundle exec rspec --tag ~type:regression spec'
 end
 
 task :default => ['db:create', 'db:migrate', 'test']
