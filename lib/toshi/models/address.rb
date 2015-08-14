@@ -81,7 +81,7 @@ module Toshi
             transactions = Transaction.to_hash_collection(transactions)
 
             if (!transactions.empty? && order_by = options[:order_by].expression)
-              transactions.sort! {|x,y| y[order_by] <=> x[order_by] } if transactions.first.has_key?(order_by)
+              transactions.sort! {|x,y| (y[order_by]||0) <=> (x[order_by]||0) } if transactions.first.has_key?(order_by)
             end
 
             hash[:transactions]     = transactions
