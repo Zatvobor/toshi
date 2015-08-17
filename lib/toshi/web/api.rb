@@ -180,22 +180,28 @@ module Toshi
       end
 
       get '/addresses/:address/balance_at.?:format?' do
-        address = Toshi::AddressesLogic.first_address!(address: params[:address])
-
-        time = params[:time]
-        time = Time.now if !time || time.to_i == 0
-        block = Toshi::Models::Block.from_time(time.to_i)
-
-        response =  {
-          balance: address.balance_at(block.height),
-          address: address.address,
-          block_height: block.height,
-          block_time: block.time
-        }
+        address   = Toshi::AddressesLogic.first_address!(address: params[:address])
+        block     = Toshi::BlocksLogic.last_by_time(params[:time])
+        response  = Toshi::AddressesLogic.to_balance_response(address, block)
 
         case format
         when 'json'
-          response.to_json
+          json(response)
+        else
+          raise InvalidFormatError
+        end
+      end
+
+      get '/addresses/:address/balances_at.?:format?' do
+        address   = Toshi::AddressesLogic.first_address!(address: params[:address])
+        blocks    = Toshi::BlocksLogic.all_in_period(params[:year], params[:month], params[:mday])
+        response  = blocks.map do |block|
+          Toshi::AddressesLogic.to_balance_response(address, block)
+        end
+
+        case format
+        when 'json'
+          json(response)
         else
           raise InvalidFormatError
         end

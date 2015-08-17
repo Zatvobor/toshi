@@ -37,5 +37,14 @@ module Toshi
     def unconfirmed_address(where)
       @unconfirmed_address.method(:where).call(where).first
     end
+
+    def to_balance_response(address, block)
+      {
+        balance: address.balance_at(block.height),
+        address: address.address,
+        block_height: block.height,
+        block_time: block.time
+      }
+    end
   end
 end

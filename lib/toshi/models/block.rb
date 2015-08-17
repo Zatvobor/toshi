@@ -56,8 +56,12 @@ module Toshi
       # t  =  epoch time if t >= 500_000_000
       #       block height if t < 500_000_000
       def self.from_time(t)
-        key = t < 500_000_000 ? :height : :time
-        order(Sequel.desc(key)).where(key => 0..t).first
+        from_range(0..t).first
+      end
+
+      def self.from_range(t, order=Sequel.method(:desc))
+        key = t.first < 500_000_000 ? :height : :time
+        order(order.call(key)).where(key => t)
       end
 
       def bitcoin_block

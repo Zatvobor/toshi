@@ -29,5 +29,20 @@ module Toshi
       end
     end
 
+    def last_by_time(time)
+      time = Time.now if !time || time.to_i == 0
+      @block.from_time(time.to_i)
+    end
+
+    def all_in_period(year, month, mday)
+      start_period = DateTime.parse("#{year}#{month||'01'}#{mday||'01'}")
+      end_period = start_period.next_day    if mday
+      end_period = start_period.next_month  if (!end_period && month)
+      end_period = start_period.next_year   if (!end_period && year)
+
+      period = start_period.to_time.utc.to_i..end_period.to_time.utc.to_i
+      @block.from_range(period)
+    end
+
   end
 end

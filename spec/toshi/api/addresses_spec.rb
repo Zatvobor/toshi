@@ -64,32 +64,56 @@ describe Toshi::Web::Api, :type => :request do
 
   end
 
+  def assert_balance(balance, block_height, block_time, json=json(), address="mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
+    expect(json['balance']).to eq(balance)
+    expect(json['address']).to eq(address)
+    expect(json['block_height']).to eq(block_height)
+    expect(json['block_time']).to eq(block_time)
+  end
+
   describe "GET /addresses/<hash>/balance_at.json" do
     it "returns balance, target address and block info" do
       get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at'
 
-      expect(json['balance']).to eq(5_000_000_000)
-      expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
-      expect(json['block_height']).to eq(7)
-      expect(json['block_time']).to eq(1402184413)
+      assert_balance(5_000_000_000, 7, 1402184413)
     end
 
     it "will return a balance of 0 if there are no transactions found" do
       get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at?time=5'
 
-      expect(json['balance']).to eq(0)
-      expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
-      expect(json['block_height']).to eq(5)
-      expect(json['block_time']).to eq(1402184357)
+      assert_balance(0, 5, 1402184357)
     end
 
     it "uses block height if time is below five hundred thousand" do
       get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balance_at?time=6'
 
-      expect(json['balance']).to eq(5_000_000_000)
-      expect(json['address']).to eq("mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz")
-      expect(json['block_height']).to eq(6)
-      expect(json['block_time']).to eq(1402184385)
+      assert_balance(5_000_000_000, 6, 1402184385)
+    end
+  end
+
+  describe "GET /addresses/<hash>/balances_at.json" do
+    it "will return balances for a year" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014'
+
+      expect(json.count).to eq(8)
+      assert_balance(5_000_000_000, 7, 1402184413, json.first)
+      assert_balance(0, 0, 1402184217, json.last)
+    end
+
+    it "will return balances for a month" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=06'
+
+      expect(json.count).to eq(8)
+      assert_balance(5_000_000_000, 7, 1402184413, json.first)
+      assert_balance(0, 0, 1402184217, json.last)
+    end
+
+    it "will return balances for a day" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=06&mday=07'
+
+      expect(json.count).to eq(8)
+      assert_balance(5_000_000_000, 7, 1402184413, json.first)
+      assert_balance(0, 0, 1402184217, json.last)
     end
   end
 
