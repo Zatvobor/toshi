@@ -54,9 +54,16 @@ module Toshi
     private
 
     def current_period(year, month, mday)
-      month = "0#{month}" if month.is_a?(Integer) && month.to_i <= 9
-      mday  = "0#{mday}"  if mday.is_a?(Integer) && mday.to_i <= 9
+      month, mday = stringify(month), stringify(mday)
       DateTime.parse("#{year}#{month}#{mday}")
+    end
+
+    def stringify(month_or_mday)
+      if (month_or_mday.is_a?(Integer) || month_or_mday.is_a?(String) && month_or_mday.size == 1) && month_or_mday.to_i <= 9
+        "0#{month_or_mday}"
+      else
+        month_or_mday
+      end
     end
 
     def next_period(from_date, to_year_month_mday)
@@ -75,7 +82,7 @@ module Toshi
       when 'Y' then method = :prev_year
       when 'D' then method = :prev_day
       when 'W'
-        method = :prev_day
+        method    =  :prev_day
         footsteps *= 7
       end
 

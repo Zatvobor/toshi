@@ -122,6 +122,12 @@ describe Toshi::Web::Api, :type => :request do
       assert_balance(5_000_000_000, 7, 1402184413, json.first)
       assert_balance(0, 0, 1402184217, json.last)
     end
+
+    it "will return balances for a day ('month' and 'mday' as integers)" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=6&mday=7'
+
+      expect(json.count).to eq(8)
+    end
   end
 
   describe "GET /addresses/<hash>/balances_at.json by 'period_of'" do
