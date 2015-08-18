@@ -35,13 +35,57 @@ module Toshi
     end
 
     def all_in_period(year, month, mday)
-      start_period = DateTime.parse("#{year}#{month||'01'}#{mday||'01'}")
-      end_period = start_period.next_day    if mday
-      end_period = start_period.next_month  if (!end_period && month)
-      end_period = start_period.next_year   if (!end_period && year)
+      now = DateTime.now
+      if year && period_of = year.match(/(\d+)(D|W|M|Y)/i)
+        end_period    = current_period(now.year, now.month, now.mday)
+        start_period  = prev_period(end_period, period_of[2], period_of[1].to_i)
+      else
+        start_period = current_period(year || now.year, month || 1, mday || 1)
+        end_period   = next_period(start_period, [year || start_period.year, month, mday])
+      end
+      all_in_range(start_period, end_period)
+    end
 
+    def all_in_range(start_period, end_period)
       period = start_period.to_time.utc.to_i..end_period.to_time.utc.to_i
       @block.from_range(period)
+    end
+
+    private
+
+    def current_period(year, month, mday)
+      month = "0#{month}" if month.is_a?(Integer) && month.to_i <= 9
+      mday  = "0#{mday}"  if mday.is_a?(Integer) && mday.to_i <= 9
+      DateTime.parse("#{year}#{month}#{mday}")
+    end
+
+    def next_period(from_date, to_year_month_mday)
+      year, month, mday = to_year_month_mday
+
+      method = :next_day   if mday
+      method = :next_month if (!method && month)
+      method = :next_year  if (!method && year)
+
+      shift_period(from_date, method, 1)
+    end
+
+    def prev_period(from_date, method, footsteps)
+      case method.upcase
+      when 'M' then method = :prev_month
+      when 'Y' then method = :prev_year
+      when 'D' then method = :prev_day
+      when 'W'
+        method = :prev_day
+        footsteps *= 7
+      end
+
+      shift_period(from_date, method, footsteps)
+    end
+
+    def shift_period(from_date, method, footsteps)
+      footsteps.times.reduce(from_date) do |memo|
+        memo.method(method.to_sym).call
+      end
     end
 
   end
