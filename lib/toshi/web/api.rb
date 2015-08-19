@@ -182,7 +182,7 @@ module Toshi
       get '/addresses/:address/balance_at.?:format?' do
         address   = Toshi::AddressesLogic.first_address!(address: params[:address])
         block     = Toshi::BlocksLogic.last_by_time(params[:time])
-        response  = Toshi::AddressesLogic.to_balance_response(address, block)
+        response  = Toshi::AddressesLogic.to_balance_hash(address, block)
 
         case format
         when 'json'
@@ -196,7 +196,7 @@ module Toshi
         address   = Toshi::AddressesLogic.first_address!(address: params[:address])
         blocks    = Toshi::BlocksLogic.all_in_period((params[:year]||params[:period_of]), params[:month], params[:mday])
         response  = blocks.map do |block|
-          Toshi::AddressesLogic.to_balance_response(address, block)
+          Toshi::AddressesLogic.to_balance_hash(address, block)
         end
 
         case format
