@@ -43,14 +43,13 @@ module Toshi
       first_in_range(time.to_i)
     end
 
-    def all_in_period(year, month, mday)
-      now = DateTime.now
-      if year && period_of = year.match(/(\d+)(D|W|M|Y)/i)
-        end_period    = Toshi::PeriodsLogic.current_period(now.year, now.month, now.mday)
+    def all_in_period(from, period_of)
+      from          = nil if from == 'now'
+      end_period    = (from ? DateTime.parse(from) : DateTime.now)
+
+      period_of ||= '1d'
+      if period_of = period_of.match(/(\d+)(D|W|M|Y)/i)
         start_period  = Toshi::PeriodsLogic.prev_period(end_period, period_of[2], period_of[1].to_i)
-      else
-        start_period = Toshi::PeriodsLogic.current_period(year || now.year, month || 1, mday || 1)
-        end_period   = Toshi::PeriodsLogic.next_period(start_period, [year || start_period.year, month, mday])
       end
       all_in_range(start_period, end_period)
     end

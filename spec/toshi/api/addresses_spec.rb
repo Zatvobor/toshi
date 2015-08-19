@@ -91,7 +91,7 @@ describe Toshi::Web::Api, :type => :request do
     end
   end
 
-  describe "GET /addresses/<hash>/balances_at.json by params such as 'year', 'month', 'mday'" do
+  describe "GET /addresses/<hash>/balances_at.json by 'period_of' and 'from'" do
     it "will return balances for a current year" do
       get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at'
 
@@ -99,56 +99,63 @@ describe Toshi::Web::Api, :type => :request do
       expect(json.count).to eq(0)
     end
 
+    it "will return balances for current year" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1Y'
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(0)
+    end
+
+    it "will return balances for current year" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1Y&from=now'
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(0)
+    end
+
     it "will return balances for a year" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1Y&from=20150101'
 
       expect(json.count).to eq(8)
       assert_balance(5_000_000_000, 7, 1402184413, json.first)
       assert_balance(0, 0, 1402184217, json.last)
+    end
+
+    it "will return balances for 2 months" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=2M'
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(0)
     end
 
     it "will return balances for a month" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=06'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1M&from=20140701'
 
       expect(json.count).to eq(8)
       assert_balance(5_000_000_000, 7, 1402184413, json.first)
       assert_balance(0, 0, 1402184217, json.last)
+    end
+
+    it "will return balances for current week" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1W'
+
+      expect(last_response).to be_ok
+      expect(json.count).to eq(0)
     end
 
     it "will return balances for a day" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=06&mday=07'
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1D&from=20140608'
 
       expect(json.count).to eq(8)
       assert_balance(5_000_000_000, 7, 1402184413, json.first)
       assert_balance(0, 0, 1402184217, json.last)
     end
 
-    it "will return balances for a day ('month' and 'mday' as integers)" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?year=2014&month=6&mday=7'
-
-      expect(json.count).to eq(8)
-    end
-  end
-
-  describe "GET /addresses/<hash>/balances_at.json by 'period_of'" do
-    xit "will return balances for current year" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1Y'
-      expect(last_response).to be_ok
-    end
-
-    xit "will return balances for 2 months" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=2M'
-      expect(last_response).to be_ok
-    end
-
-    xit "will return balances for current week" do
-      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=1W'
-      expect(last_response).to be_ok
-    end
-
-    xit "will return balances for 7 days" do
+    it "will return balances for 7 days" do
       get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/balances_at?period_of=7D'
+
       expect(last_response).to be_ok
+      expect(json.count).to eq(0)
     end
   end
 

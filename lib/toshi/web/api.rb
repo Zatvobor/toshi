@@ -194,7 +194,7 @@ module Toshi
 
       get '/addresses/:address/balances_at.?:format?' do
         address   = Toshi::AddressesLogic.first_address!(address: params[:address])
-        blocks    = Toshi::BlocksLogic.all_in_period((params[:year]||params[:period_of]), params[:month], params[:mday])
+        blocks    = Toshi::BlocksLogic.all_in_period(params[:from], params[:period_of])
         response  = blocks.map do |block|
           Toshi::AddressesLogic.to_balance_hash(address, block)
         end
