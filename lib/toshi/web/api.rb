@@ -108,6 +108,19 @@ module Toshi
         { hash: ptx.hash }.to_json
       end
 
+      get '/transactions/confirmed' do
+        case format
+        when 'json'
+          options = {offset: params[:offset], limit: params[:limit]}
+          Toshi::Utils.sanitize_options(options)
+          transactions = Toshi::TransactionsLogic.all_confirmed(options[:limit], options[:offset])
+
+          json(transactions.to_hash)
+        else
+          raise InvalidFormatError
+        end
+      end
+
       get '/transactions/unconfirmed' do
         case format
         when 'json'
