@@ -115,7 +115,7 @@ module Toshi
           Toshi::Utils.sanitize_options(options)
           transactions = Toshi::TransactionsLogic.all_confirmed(options[:limit], options[:offset])
 
-          json(transactions.to_hash)
+          json(transactions.to_hash.values)
         else
           raise InvalidFormatError
         end
