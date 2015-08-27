@@ -204,11 +204,11 @@ module Toshi
     end
 
     def on_tx(tx)
-      log "DISABLED >> tx: #{tx.hash} (#{tx.payload.size} bytes)"
-      # unless Toshi::Models::UnconfirmedRawTransaction.where(hsh: tx.hash).any?
-      #   Toshi::Models::UnconfirmedRawTransaction.create(hsh: tx.hash, payload: Sequel.blob((tx.payload || tx.to_payload)))
-      #   Toshi::Workers::TransactionWorker.perform_async tx.hash, { 'sender' => connection_info }
-      # end
+      log ">> tx: #{tx.hash} (#{tx.payload.size} bytes)"
+      unless Toshi::Models::UnconfirmedRawTransaction.where(hsh: tx.hash).any?
+        Toshi::Models::UnconfirmedRawTransaction.create(hsh: tx.hash, payload: Sequel.blob((tx.payload || tx.to_payload)))
+        Toshi::Workers::TransactionWorker.perform_async tx.hash, { 'sender' => connection_info }
+      end
     end
 
     def on_block(blk)
