@@ -40,11 +40,15 @@ module Toshi
 
       # get collection of blocks
       get '/blocks.?:format?' do
-        @blocks = Toshi::Models::Block.limit(50).order(Sequel.desc(:id))
+        opts  = {offset: params[:offset], limit: params[:limit], branch: params[:branch]}
+        opts  = Toshi::Utils.sanitize_options(opts)
+        where = {branch: opts[:branch]} if opts[:branch]
+
+        blocks = Toshi::BlocksLogic.all(where, opts[:limit], opts[:offset])
 
         case format
         when 'json'
-          json @blocks.map(&:to_hash)
+          json blocks.map(&:to_hash)
         when 'rss'
           builder :blocks_rss
         else
@@ -53,38 +57,24 @@ module Toshi
       end
 
       # get latest block or search by hash or height
-      get '/blocks/:hash.?:format?' do
-        if params[:hash].to_s == 'latest'
-          @block = Toshi::Models::Block.head
-        elsif params[:hash].to_s.size < 64 && (Integer(params[:hash]) rescue false)
-          @block = Toshi::Models::Block.where(height: params[:hash], branch: 0).first
-        else
-          @block = Toshi::Models::Block.where(hsh: params[:hash]).first
-        end
-        raise NotFoundError unless @block
+      get '/blocks/:block.?:format?' do
+        block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block], params[:time])
 
         case format
-        when 'json'; json(@block.to_hash)
-        when 'hex';  @block.raw.payload.unpack("H*")[0]
-        when 'bin';  @block.raw.payload
+        when 'json'; json(block.to_hash)
+        when 'hex';  block.raw.payload.unpack("H*")[0]
+        when 'bin';  block.raw.payload
         else raise InvalidFormatError
         end
       end
 
       # get block transactions
-      get '/blocks/:hash/transactions.?:format?' do
-        if params[:hash].to_s == 'latest'
-          @block = Toshi::Models::Block.head
-        elsif params[:hash].to_s.size < 64 && (Integer(params[:hash]) rescue false)
-          @block = Toshi::Models::Block.where(height: params[:hash], branch: 0).first
-        else
-          @block = Toshi::Models::Block.where(hsh: params[:hash]).first
-        end
-        raise NotFoundError unless @block
+      get '/blocks/:block/transactions.?:format?' do
+        block = Toshi::BlocksLogic.first_by_hash_or_latest_by_time!(params[:block], params[:time])
 
         case format
         when 'json'
-          json(@block.to_hash({show_txs: true, offset: params[:offset], limit: params[:limit]}))
+          json(block.to_hash({show_txs: true, offset: params[:offset], limit: params[:limit]}))
         else
           raise InvalidFormatError
         end
@@ -118,6 +108,19 @@ module Toshi
         { hash: ptx.hash }.to_json
       end
 
+      get '/transactions/confirmed' do
+        case format
+        when 'json'
+          options = {offset: params[:offset], limit: params[:limit]}
+          Toshi::Utils.sanitize_options(options)
+          transactions = Toshi::TransactionsLogic.all_confirmed(options[:limit], options[:offset])
+
+          json(transactions.to_hash.values)
+        else
+          raise InvalidFormatError
+        end
+      end
+
       get '/transactions/unconfirmed' do
         case format
         when 'json'
@@ -149,9 +152,7 @@ module Toshi
       ####
 
       get '/addresses/:address.?:format?' do
-        address = Toshi::Models::Address.where(address: params[:address]).first
-        address = Toshi::Models::UnconfirmedAddress.where(address: params[:address]).first unless address
-        raise NotFoundError unless address
+        address = Toshi::AddressesLogic.first_address_or_unconfirmed_address!(address: params[:address])
 
         case format
         when 'json';
@@ -162,28 +163,26 @@ module Toshi
       end
 
       get '/addresses/:address/transactions.?:format?' do
-        address = Toshi::Models::Address.where(address: params[:address]).first
-        address = Toshi::Models::UnconfirmedAddress.where(address: params[:address]).first unless address
-        raise NotFoundError unless address
+        address = Toshi::AddressesLogic.first_address_or_unconfirmed_address!(address: params[:address])
 
         case format
         when 'json'
-          json address.to_hash(options={show_txs: true, offset: params[:offset], limit: params[:limit]})
+          options = {show_txs: true, offset: params[:offset], limit: params[:limit], order_by: params[:order_by]}
+          json address.to_hash(options)
         else
           raise InvalidFormatError
         end
       end
 
       get '/addresses/:address/unspent_outputs.?:format?' do
-        @address = Toshi::Models::Address.where(address: params[:address]).first
-        raise NotFoundError unless @address
+        address = Toshi::AddressesLogic.first_address!(address: params[:address])
 
         case format
         when 'json'
           options = {offset: params[:offset], limit: params[:limit]}
           Toshi::Utils.sanitize_options(options)
 
-          unspent_outputs = @address.unspent_outputs.offset(options[:offset])
+          unspent_outputs = address.unspent_outputs.offset(options[:offset])
             .limit(options[:limit]).order(:unspent_outputs__amount)
 
           unspent_outputs = Toshi::Models::Output.to_hash_collection(unspent_outputs)
@@ -194,21 +193,28 @@ module Toshi
       end
 
       get '/addresses/:address/balance_at.?:format?' do
-        @address = Toshi::Models::Address.where(address: params[:address]).first
-        raise NotFoundError unless @address
-
-        time = params[:time]
-        time = Time.now if !time || time.to_i == 0
-        block = Toshi::Models::Block.from_time(time.to_i)
+        address   = Toshi::AddressesLogic.first_address!(address: params[:address])
+        block     = Toshi::BlocksLogic.last_by_time(params[:time])
+        response  = Toshi::AddressesLogic.to_balance_hash(address, block)
 
         case format
         when 'json'
-          {
-            balance: @address.balance_at(block.height),
-            address: @address.address,
-            block_height: block.height,
-            block_time: block.time
-          }.to_json
+          json(response)
+        else
+          raise InvalidFormatError
+        end
+      end
+
+      get '/addresses/:address/balances_at.?:format?' do
+        address   = Toshi::AddressesLogic.first_address!(address: params[:address])
+        blocks    = Toshi::BlocksLogic.all_in_period(params[:from], params[:period_of])
+        response  = blocks.map do |block|
+          Toshi::AddressesLogic.to_balance_hash(address, block)
+        end
+
+        case format
+        when 'json'
+          json(response)
         else
           raise InvalidFormatError
         end

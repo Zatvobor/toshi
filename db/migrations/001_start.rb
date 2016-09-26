@@ -33,6 +33,7 @@ Sequel.migration do
 
       index [:branch]
       index [:height]
+      index [:time]
       index [:hsh], unique: true
       index [:prev_block]
     end

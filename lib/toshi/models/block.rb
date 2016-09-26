@@ -53,13 +53,6 @@ module Toshi
         locator
       end
 
-      # t  =  epoch time if t >= 500_000_000
-      #       block height if t < 500_000_000
-      def self.from_time(t)
-        key = t < 500_000_000 ? :height : :time
-        order(Sequel.desc(key)).where(key => 0..t).first
-      end
-
       def bitcoin_block
         Bitcoin::P::Block.new(RawBlock.where(hsh: hsh).first.payload)
       end

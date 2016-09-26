@@ -100,6 +100,7 @@ end
 
 require "toshi/db"
 require "toshi/mq"
+require "toshi/logics"
 require "toshi/utils"
 require "toshi/workers/block_worker"
 require "toshi/workers/transaction_worker"
