@@ -12,7 +12,7 @@ use Bugsnag::Rack
 
 app = Rack::URLMap.new(
   '/'          => Toshi::Web::WWW,
-  '/api/v0'    => Toshi::Web::Api,
+  '/api/v0'    => Toshi::Web::Application,
 )
 
 map '/sidekiq' do
