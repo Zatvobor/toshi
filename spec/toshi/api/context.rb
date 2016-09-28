@@ -4,7 +4,7 @@ RSpec.shared_context 'shared context' do
   include Rack::Test::Methods
 
   def app
-    @app ||= Toshi::Web::Api
+    @app ||= Toshi::Web::Application
   end
 
   before do |it|
