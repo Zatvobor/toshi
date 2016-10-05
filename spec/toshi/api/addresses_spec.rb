@@ -159,4 +159,12 @@ describe Toshi::Web::Api, :type => :request do
     end
   end
 
+  describe "GET /addresses/<hash>/history" do
+    it "will return balance history" do
+      get '/addresses/mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz/history'
+
+      expect(json.count).to eq(1)
+      assert_balance(5_000_000_000, 6, 1402184385, json.first)
+    end
+  end
 end

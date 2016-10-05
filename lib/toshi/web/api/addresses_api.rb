@@ -71,6 +71,21 @@ module Toshi
         end
       end
 
+      get '/addresses/:address/history' do
+        address   = Toshi::AddressesLogic.first_address!(address: params[:address])
+        blocks    = Toshi::AddressesLogic.address_ledger_entries_by_blocks(address)
+        response  = blocks.map do |block|
+          Toshi::AddressesLogic.to_balance_hash(address, block)
+        end
+
+        case format
+        when 'json'
+          json(response)
+        else
+          raise InvalidFormatError
+        end
+      end
+
     end
   end
 end

@@ -38,6 +38,19 @@ module Toshi
       @unconfirmed_address.method(:where).call(where).first
     end
 
+    def address_ledger_entries_by_blocks(address)
+      rows = Toshi.db[:address_ledger_entries]
+        .select(:transaction_id, :height)
+        .where(address_id: address.id)
+        .join(:transactions, :id => :transaction_id)
+        .where(pool: Toshi::Models::Transaction::TIP_POOL)
+      ids = rows
+        .all
+        .uniq{|r| r[:transaction_id]}
+        .map{|r| r[:height]}
+      Toshi::Models::Block.where(height: ids)
+    end
+
     def to_balance_hash(address, block)
       {
         balance: address.balance_at(block.height),
