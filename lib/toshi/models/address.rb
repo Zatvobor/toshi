@@ -23,8 +23,13 @@ module Toshi
 
       def balance_at(block_height)
         # sum the ledger entries for this address on the main branch up to this height
-        Toshi.db[:address_ledger_entries].where(address_id: id).join(:transactions, :id => :transaction_id)
-          .where(pool: Transaction::TIP_POOL).where("height <= #{block_height}").sum(:amount).to_i || 0
+        sum = Toshi.db[:address_ledger_entries]
+          .where(address_id: id)
+          .join(:transactions, :id => :transaction_id)
+          .where(pool: Transaction::TIP_POOL)
+          .where("height <= #{block_height}")
+          .sum(:amount).to_i
+        sum || 0
       end
 
       def transaction_ids(offset=0, limit=nil, order=Sequel.desc(:id))
