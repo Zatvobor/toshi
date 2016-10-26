@@ -23,15 +23,28 @@ module Toshi
 
       def balance_at(block_height)
         # sum the ledger entries for this address on the main branch up to this height
-        Toshi.db[:address_ledger_entries].where(address_id: id).join(:transactions, :id => :transaction_id)
-          .where(pool: Transaction::TIP_POOL).where("height <= #{block_height}").sum(:amount).to_i || 0
+        sum = Toshi.db[:address_ledger_entries]
+          .where(address_id: id)
+          .join(:transactions, :id => :transaction_id)
+          .where(pool: Transaction::TIP_POOL)
+          .where("height <= #{block_height}")
+          .sum(:amount).to_i
+        sum || 0
       end
 
-      def transactions(offset=0, limit=100, order=Sequel.desc(:id))
-        tids = Toshi.db[:address_ledger_entries].where(address_id: id)
+      def transaction_ids(offset=0, limit=nil, order=Sequel.desc(:id))
+        tids = Toshi.db[:address_ledger_entries]
+          .where(address_id: id)
           .select(:transaction_id).group_by(:transaction_id)
-          .order(Sequel.desc(:transaction_id)).offset(offset).limit(limit).map(:transaction_id)
-        return [] unless tids.any?
+          .order(Sequel.desc(:transaction_id))
+          .offset(offset)
+          .limit(limit)
+          .map(:transaction_id)
+        tids.any? ? tids : []
+      end
+
+      def transactions(offset=0, limit=nil, order=Sequel.desc(:id))
+        tids = transaction_ids(offset, limit, order)
         Transaction.where(id: tids).order(order)
       end
 
@@ -85,7 +98,7 @@ module Toshi
             end
 
             hash[:transactions]     = transactions
-            hash[:no_transactions]  = address.transactions.count
+            hash[:no_transactions]  = address.transaction_ids.count
           end
 
           collection << hash
