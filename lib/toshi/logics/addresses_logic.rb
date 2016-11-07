@@ -38,13 +38,12 @@ module Toshi
       @unconfirmed_address.method(:where).call(where).first
     end
 
-    def address_ledger_entries_by_blocks(address, limit=nil)
+    def address_ledger_entries_by_blocks(address)
       rows = Toshi.db[:address_ledger_entries]
         .select(:transaction_id, :height)
         .where(address_id: address.id)
         .join(:transactions, :id => :transaction_id)
         .where(pool: Toshi::Models::Transaction::TIP_POOL)
-        .limit(limit)
       ids = rows
         .all
         .uniq{|r| r[:transaction_id]}
