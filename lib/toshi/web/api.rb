@@ -4,6 +4,17 @@ module Toshi
   module Web
 
     class Api < Toshi::Web::Base
+      # Allow cross-origin requests
+      before do
+        headers 'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => ['OPTIONS', 'GET', 'POST'],
+                'Access-Control-Allow-Headers' => 'Content-Type'
+      end
+      set :protection, false
+      options '/*' do
+        200
+      end
+
       helpers do
         def format
           fmt = params[:format].to_s
