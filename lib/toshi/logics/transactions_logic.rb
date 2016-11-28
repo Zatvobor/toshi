@@ -13,5 +13,11 @@ module Toshi
     def all_confirmed(limit=nil, offset=nil)
       all(nil, limit, offset)
     end
+
+    def find_confirmed_or_unconfirmed(hash)
+      tx = (hash.bytesize == 64 && Toshi::Models::Transaction.where(hsh: hash).first)
+      tx ||= (hash.bytesize == 64 && Toshi::Models::UnconfirmedTransaction.where(hsh: hash).first)
+      tx ||= nil #converts `false` into `nil` (it's useful for `#compact`)
+    end
   end
 end
