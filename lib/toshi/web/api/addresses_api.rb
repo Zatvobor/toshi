@@ -2,6 +2,34 @@ module Toshi
   module Web
     class AddressesApi < Api
 
+      get '/addresses:format?' do
+        raise NotFoundError unless params[:ids]
+        addresses = params[:ids].map do |hash|
+          address = Toshi::AddressesLogic.first_address_or_unconfirmed_address(address: hash)
+          address ? address.to_hash : nil
+        end
+        case format
+        when 'json';
+          json(addresses.compact)
+        else
+          raise InvalidFormatError
+        end
+      end
+
+      get '/addresses/transactions.?:format?' do
+        raise NotFoundError unless params[:ids]
+        addresses = params[:ids].map do |hash|
+          address = Toshi::AddressesLogic.first_address_or_unconfirmed_address(address: hash)
+          address ? address.to_hash(show_txs: true) : nil
+        end
+        case format
+        when 'json';
+          json(addresses.compact)
+        else
+          raise InvalidFormatError
+        end
+      end
+
       get '/addresses/:address.?:format?' do
         address = Toshi::AddressesLogic.first_address_or_unconfirmed_address!(address: params[:address])
 

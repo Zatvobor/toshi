@@ -28,6 +28,13 @@ describe Toshi::Web::Api, :type => :request do
       expect(last_response).to be_ok
       expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_
     end
+
+    it "loads transactions by ids" do
+      get '/transactions', ids: ["40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768", "unknown"]
+      expect(last_response).to be_ok
+      expect(json.length).to eq(1)
+      expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_(json.first)
+    end
   end
 
 end

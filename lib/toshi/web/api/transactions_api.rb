@@ -52,19 +52,31 @@ module Toshi
         end
       end
 
+      get '/transactions:format?' do
+        raise NotFoundError unless params[:ids]
+        txs = params[:ids].map do |hash|
+          tx = Toshi::TransactionsLogic.find_confirmed_or_unconfirmed(hash)
+          tx.to_hash if tx
+        end
+        case format
+        when 'json';
+          json(txs.compact)
+        else
+          raise InvalidFormatError
+        end
+      end
+
       get '/transactions/:hash.?:format?' do
-        @tx = (params[:hash].bytesize == 64 && Toshi::Models::Transaction.where(hsh: params[:hash]).first)
-        @tx ||= (params[:hash].bytesize == 64 && Toshi::Models::UnconfirmedTransaction.where(hsh: params[:hash]).first)
-        raise NotFoundError unless @tx
+        tx = Toshi::TransactionsLogic.find_confirmed_or_unconfirmed(params[:hash])
+        raise NotFoundError unless tx
 
         case format
-        when 'json'; json(@tx.to_hash)
-        when 'hex';  @tx.raw.payload.unpack("H*")[0]
-        when 'bin';  @tx.raw.payload
+        when 'json'; json(tx.to_hash)
+        when 'hex';  tx.raw.payload.unpack("H*")[0]
+        when 'bin';  tx.raw.payload
         else raise InvalidFormatError
         end
       end
-      
     end
   end
 end

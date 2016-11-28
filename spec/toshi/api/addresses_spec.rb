@@ -12,6 +12,14 @@ describe Toshi::Web::Api, :type => :request do
       expect(last_response).to be_ok
       expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_
     end
+
+    it "loads addresses by ids" do
+      get '/addresses', ids: ["mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz", "unknown"]
+
+      expect(last_response).to be_ok
+      expect(json.length).to eq(1)
+      expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_(json.first)
+    end
   end
 
   describe "GET /addresses/<hash>/transactions" do
@@ -22,6 +30,16 @@ describe Toshi::Web::Api, :type => :request do
       expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_
       expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_(json['transactions'][0])
       expect(json['no_transactions']).to be 1
+    end
+
+    it "loads address & transactions by ids" do
+      get '/addresses/transactions', ids: ["mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz", "unknown"]
+
+      expect(last_response).to be_ok
+      expect(json.length).to eq(1)
+      expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_(json.first)
+      expect_40d17ca54556e99e1dec77324f99da327c7c6fde243ab069dec1d5b5352fc768_(json.first['transactions'][0])
+      expect(json.first['no_transactions']).to be 1
     end
 
     it "loads address & transactions which is ordered by :confirmations" do

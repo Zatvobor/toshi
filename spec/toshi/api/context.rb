@@ -21,7 +21,7 @@ end
 
 RSpec.shared_context 'shared hash assertions' do
 
-  def expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_
+  def expect_mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz_(json=json())
     expect(json['hash']).to eq('mw851HctCPZUuRCC4KktwKCJQqBz9Xwohz')
     expect(json['balance']).to eq(5000000000)
     expect(json['received']).to eq(5000000000)
